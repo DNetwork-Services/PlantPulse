@@ -4,7 +4,9 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.api import assets, maintenance
+from app.api import assets, maintenance, work_orders
+
+
 app = FastAPI(
     title="PlantPulse API",
     description="Ethanol Plant Operations & Asset Management Platform",
@@ -21,6 +23,7 @@ app.add_middleware(
 
 app.include_router(assets.router)
 app.include_router(maintenance.router)
+app.include_router(work_orders.router)
 
 
 @app.get("/health")
