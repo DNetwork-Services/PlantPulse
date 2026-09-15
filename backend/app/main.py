@@ -1,5 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
+from app.api import assets
 
 app = FastAPI(
     title="PlantPulse API",
@@ -7,10 +12,6 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Allow the local Vite dev server to call this API.
-# NEVER use allow_origins=["*"] once real auth/cookies are involved — 
-# we'll tighten this per-environment in later phases (dev/staging/prod
-# will each have their own explicit allowed origin).
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:3000"],
@@ -19,10 +20,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(assets.router)
+
 
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "plantpulse-backend"}
+
+
+@app.get("/health/db")
+def health_db(db: Session = Depends(get_db)):
+    db.execute(text("SELECT 1"))
+    return {"status": "ok", "database": "reachable"}
 
 
 @app.get("/")
